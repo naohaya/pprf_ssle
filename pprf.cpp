@@ -114,7 +114,7 @@ string bitFlip(const string& inbits){
     int insize = bits.size();
     int pos, offset;
     pos = rand() % insize;
-    offset = pos + 4;
+    offset = (rand() % insize/3) * 2;
 
     if (bits[pos] == '0'){
         bits[pos] = '1';
