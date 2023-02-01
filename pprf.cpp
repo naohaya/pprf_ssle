@@ -18,68 +18,24 @@
 
 using namespace std;
 
-const uint64_t defaultSeed = 0x93064E905C127FE5;
-const uint64_t defaultHash = 0xA4BDE5C4A05E6256;
-const uint64_t defaultlcg = 0;
-int keySize = 0;
-
-uint64_t hexToDecimal(std::string);
-uint64_t prf(uint64_t *, uint64_t *, uint64_t *);
-std::string puncturing(uint64_t);
-std::string decimalToBinary(uint64_t);
-std::string binaryToHex(std::string);
-std::vector<string> splitBinaryVector(std::string&, int);
-std::string bitFlip(const std::string&);
-
-
-int main(int argc, char* argv[]){
-    uint64_t seed = defaultSeed; /* secret */
-    uint64_t lcg = defaultlcg;
-    uint64_t hash = defaultHash; /* key */
-    uint64_t v = 0;
-    string result;
-
-    
-    //std::string in_seed;
-    //std::string in_hash;
-
-    /* for analyzing command line arguments */
-    cmdline::parser p;
-    p.add<string>("secret", 's', "secret value", false);
-    p.add<string>("key", 'k', "key value", false);
-    p.add("help", 0, "print usage");
-
-    if(!p.parse(argc, argv) || p.exist("help")) {
-        std::cout << p.error_full() << p.usage();
-        return 0;
-    }
-
-    if (p.exist("secret")) {
-        //in_seed = argv[2]; //p.get<std::string>("secret"); 
-        seed = hexToDecimal(argv[2]);
-    }
-
-    if(p.exist("key")) {
-        /* hash = hexToDecimal(p.get<std::string>("key")); */
-        //in_hash = argv[4];
-        hash = hexToDecimal(argv[4]);
-    }
-
-    cout << "secret: " << seed << endl;
-
-    v = prf(&seed, &lcg, &hash);
-
-    cout << "key (decimal): " << v << endl; 
-
-    result = puncturing(v);
-
-    cout << "punctured key: " << result << endl;
+class PPRF {
+public:
+    uint64_t hexToDecimal(string);
+    vector<char> hexToBinary(string);
+    uint64_t prf(uint64_t *, uint64_t *, uint64_t *);
+    string puncturing(uint64_t);
+    string decimalToBinary(uint64_t);
+    string binaryToHex(string);
+    vector<string> splitBinaryVector(string&, int);
+    string bitFlip(const string&);
+private:
+    int keySize = 0;
+};
 
 
-}
 
 /* pseudo-random function */
-uint64_t prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){        
+uint64_t PPRF::prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){        
     uint64_t ret = 0;
     uint64_t i;
     // generating a random value by prf
@@ -92,7 +48,7 @@ uint64_t prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){
 }
 
 /* puncturing a random value */
-string puncturing(uint64_t rvalue) {
+string PPRF::puncturing(uint64_t rvalue) {
     vector<string> splvec;
     vector<int> polynomials;
     int constraint = 3;
@@ -131,7 +87,7 @@ string puncturing(uint64_t rvalue) {
 }
 
 /* bit flips */
-string bitFlip(const string& inbits){
+string PPRF::bitFlip(const string& inbits){
     string bits = inbits;
     srand( time(NULL) );
     int insize = bits.size();
@@ -156,7 +112,7 @@ string bitFlip(const string& inbits){
 }
 
 /* converting from string to unit64_t */
-uint64_t hexToDecimal(std::string sarg) {
+uint64_t PPRF::hexToDecimal(std::string sarg) {
     unsigned int value;
     uint64_t ret;
     istringstream iss(sarg);
@@ -173,7 +129,7 @@ uint64_t hexToDecimal(std::string sarg) {
 }
 
 /* converting from hex string to binary vector */
-std::vector<char> hexToBinary (std::string inHex){
+std::vector<char> PPRF::hexToBinary (std::string inHex){
     char tmp[256], out[256];
     long b = strtol(tmp, NULL, 16);
     int i = 0;
@@ -192,7 +148,7 @@ std::vector<char> hexToBinary (std::string inHex){
 }
 
 /* converting from binary vector to hex string */
-std::string binaryToHex (std::string inBin) {
+std::string PPRF::binaryToHex (std::string inBin) {
     uint64_t num;
     stringstream ss;
     istringstream iss = istringstream(inBin);
@@ -206,7 +162,7 @@ std::string binaryToHex (std::string inBin) {
 }
 
 /* split vector in to a small vector of a certain length */
-vector<string> splitBinaryVector (string& vec, int num){
+vector<string> PPRF::splitBinaryVector (string& vec, int num){
 
     vector<string> result;
  
@@ -226,7 +182,7 @@ vector<string> splitBinaryVector (string& vec, int num){
 
 }
 
-string decimalToBinary(uint64_t n) {
+string PPRF::decimalToBinary(uint64_t n) {
  
     string result;
     while (n != 0){
@@ -237,4 +193,58 @@ string decimalToBinary(uint64_t n) {
     return result;
 }
 
+/* Test code for using the class PPRF */
+int main(int argc, char* argv[]){
+    const uint64_t defaultSeed = 0x93064E905C127FE5;
+    const uint64_t defaultHash = 0xA4BDE5C4A05E6256;
+    const uint64_t defaultlcg = 0;
+    int keySize = 0;
+
+    uint64_t seed = defaultSeed; /* secret */
+    uint64_t lcg = defaultlcg;
+    uint64_t hash = defaultHash; /* key */
+    uint64_t v = 0;
+    string result;
+
+    PPRF pr = PPRF();
+    
+    //std::string in_seed;
+    //std::string in_hash;
+
+    /* for analyzing command line arguments */
+    cmdline::parser cla;
+    cla.add<string>("secret", 's', "secret value", false);
+    cla.add<string>("key", 'k', "key value", false);
+    cla.add("help", 0, "print usage");
+
+    if(!cla.parse(argc, argv) || cla.exist("help")) {
+        std::cout << cla.error_full() << cla.usage();
+        return 0;
+    }
+
+    if (cla.exist("secret")) {
+        //in_seed = argv[2]; //p.get<std::string>("secret"); 
+        seed = pr.hexToDecimal(argv[2]);
+    }
+
+    if(cla.exist("key")) {
+        /* hash = hexToDecimal(p.get<std::string>("key")); */
+        //in_hash = argv[4];
+        hash = pr.hexToDecimal(argv[4]);
+    }
+
+    
+
+    cout << "secret: " << seed << endl;
+
+    v = pr.prf(&seed, &lcg, &hash);
+
+    cout << "key (decimal): " << v << endl; 
+
+    result = pr.puncturing(v);
+
+    cout << "punctured key: " << result << endl;
+
+
+}
 
