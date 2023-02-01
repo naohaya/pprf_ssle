@@ -23,18 +23,22 @@ const uint64_t defaultHash = 0xA4BDE5C4A05E6256;
 const uint64_t defaultlcg = 0;
 int keySize = 0;
 
-uint64_t stringToDecimal(std::string);
-void puncturing(uint64_t);
+uint64_t hexToDecimal(std::string);
+uint64_t prf(uint64_t *, uint64_t *, uint64_t *);
+std::string puncturing(uint64_t);
 std::string decimalToBinary(uint64_t);
+std::string binaryToHex(std::string);
 std::vector<string> splitBinaryVector(std::string&, int);
 std::string bitFlip(const std::string&);
+
 
 int main(int argc, char* argv[]){
     uint64_t seed = defaultSeed; /* secret */
     uint64_t lcg = defaultlcg;
     uint64_t hash = defaultHash; /* key */
     uint64_t v = 0;
-    uint64_t i;
+    string result;
+
     
     //std::string in_seed;
     //std::string in_hash;
@@ -52,37 +56,51 @@ int main(int argc, char* argv[]){
 
     if (p.exist("secret")) {
         //in_seed = argv[2]; //p.get<std::string>("secret"); 
-        seed = stringToDecimal(argv[2]);
+        seed = hexToDecimal(argv[2]);
     }
 
     if(p.exist("key")) {
-        /* hash = stringToDecimal(p.get<std::string>("key")); */
+        /* hash = hexToDecimal(p.get<std::string>("key")); */
         //in_hash = argv[4];
-        hash = stringToDecimal(argv[4]);
+        hash = hexToDecimal(argv[4]);
     }
 
     cout << "secret: " << seed << endl;
 
-    // generating a random value by prf
-    for ( i = 0; i < ( 1ULL << 28); i++) {
-        v = prvhash_core64( &seed, &lcg, &hash);
-    }
+    v = prf(&seed, &lcg, &hash);
 
-    cout << "result: " << v << endl; 
+    cout << "key (decimal): " << v << endl; 
 
-    puncturing(v);
+    result = puncturing(v);
+
+    cout << "punctured key: " << result << endl;
 
 
 }
 
+/* pseudo-random function */
+uint64_t prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){        
+    uint64_t ret = 0;
+    uint64_t i;
+    // generating a random value by prf
+    for ( i = 0; i < ( 1ULL << 28); i++) {
+        ret = prvhash_core64(seed, lcg, hash);
+    }
+
+    return ret;
+
+}
 
 /* puncturing a random value */
-void puncturing(uint64_t rvalue) {
+string puncturing(uint64_t rvalue) {
     vector<string> splvec;
     vector<int> polynomials;
     int constraint = 3;
     ostringstream oss;
     string rval_str;
+    string enc;
+    string punc;
+    string result;
 
     polynomials.push_back(6);
     polynomials.push_back(5);
@@ -97,13 +115,18 @@ void puncturing(uint64_t rvalue) {
 
     // print for debug
     for (auto itr = splvec.begin(); itr != splvec.end(); ++itr) {
+        enc = codec.Encode(*itr);
+        punc = bitFlip(enc); // encoding and bit flipping
+        result += punc;
         cout << "vec: " << *itr << endl;
-        cout << " enc: " << codec.Encode(*itr); 
-        cout << " punc: " << bitFlip(codec.Encode(*itr)) << endl;
+        cout << " enc: " << enc; 
+        //cout << " hex: " << binaryToHex(codec.Encode(*itr));
+        cout << " punc: " << punc << endl;
     }
 
     //std::cout << "punctured: " << codec.Encode(rval_str) << std::endl;
 
+    return result;
 
 }
 
@@ -133,7 +156,7 @@ string bitFlip(const string& inbits){
 }
 
 /* converting from string to unit64_t */
-uint64_t stringToDecimal(std::string sarg) {
+uint64_t hexToDecimal(std::string sarg) {
     unsigned int value;
     uint64_t ret;
     istringstream iss(sarg);
@@ -166,6 +189,20 @@ std::vector<char> hexToBinary (std::string inHex){
     }
 
     return v;
+}
+
+/* converting from binary vector to hex string */
+std::string binaryToHex (std::string inBin) {
+    uint64_t num;
+    stringstream ss;
+    istringstream iss = istringstream(inBin);
+
+    iss >> num;
+    
+    ss << std::hex << num;
+
+    return ss.str();
+
 }
 
 /* split vector in to a small vector of a certain length */
