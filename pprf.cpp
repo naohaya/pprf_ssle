@@ -20,40 +20,43 @@ using namespace std;
 
 class PPRF {
 public:
-    uint64_t hexToDecimal(string);
-    vector<char> hexToBinary(string);
-    uint64_t prf(uint64_t *, uint64_t *, uint64_t *);
-    string puncturing(uint64_t);
-    string decimalToBinary(uint64_t);
-    string binaryToHex(string);
-    vector<string> splitBinaryVector(string&, int);
-    string bitFlip(const string&);
+    PPRF(){}
+    uint64_t hexToDecimal(string); // converting from hex string to decimal value (uint64_t)
+    vector<char> hexToBinary(string); // converting from hex string to Binary array (vector<char>)
+    string prf(uint64_t *, uint64_t *, uint64_t *); // pseudo-random function
+    string puncturing(string); // puncturing the value by convolutional coding
+    string decimalToBinary(uint64_t); // converting from decimal value (uint64_t) to binary string
+    string binaryToHex(string); // converting from binary string to hex string
+    vector<string> splitBinaryVector(string&, int); 
+    string bitFlip(const string&); // random bit flips
+    string align(string);
 private:
     int keySize = 0;
+    bool debug = true;
 };
 
 
 
 /* pseudo-random function */
-uint64_t PPRF::prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){        
+string PPRF::prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){        
     uint64_t ret = 0;
     uint64_t i;
     // generating a random value by prf
     for ( i = 0; i < ( 1ULL << 28); i++) {
         ret = prvhash_core64(seed, lcg, hash);
-    }
+    }    
 
-    return ret;
+    return align(decimalToBinary(ret));
 
 }
 
 /* puncturing a random value */
-string PPRF::puncturing(uint64_t rvalue) {
+string PPRF::puncturing(string rvalue) {
     vector<string> splvec;
     vector<int> polynomials;
     int constraint = 3;
     ostringstream oss;
-    string rval_str;
+    string rval_str = rvalue;
     string enc;
     string punc;
     string result;
@@ -62,22 +65,24 @@ string PPRF::puncturing(uint64_t rvalue) {
     polynomials.push_back(5);
     ViterbiCodec codec(constraint, polynomials);
 
-    rval_str = decimalToBinary(rvalue); // converted from unit64_t to binary vector
+//    rval_str = decimalToBinary(rvalue); // converted from unit64_t to binary vector
     keySize = rval_str.size();
 
-    std::cout << "size: " << keySize << " key: " << rval_str << std::endl; // for debug
+//    std::cout << "size: " << keySize << " key: " << rval_str << std::endl; // for debug
 
     splvec = splitBinaryVector(rval_str, 7);
 
-    // print for debug
+    
     for (auto itr = splvec.begin(); itr != splvec.end(); ++itr) {
         enc = codec.Encode(*itr);
         punc = bitFlip(enc); // encoding and bit flipping
         result += punc;
-        cout << "vec: " << *itr << endl;
-        cout << " enc: " << enc; 
-        //cout << " hex: " << binaryToHex(codec.Encode(*itr));
-        cout << " punc: " << punc << endl;
+        if(debug){
+            cout << "vec: " << *itr << endl; // for debug
+            cout << " enc: " << enc;  // for debug
+            //cout << " hex: " << binaryToHex(codec.Encode(*itr));
+            cout << " punc: " << punc << endl; // for debug
+        }
     }
 
     //std::cout << "punctured: " << codec.Encode(rval_str) << std::endl;
@@ -193,9 +198,26 @@ string PPRF::decimalToBinary(uint64_t n) {
     return result;
 }
 
+string PPRF::align(const string bits){
+    string rval_str = bits;
+    string result;
+    int keySize = rval_str.size();
+    int remain = keySize % 7; // currently key size should be a multiples of 7
+    result = rval_str.erase(keySize - remain);
+
+    if(debug){
+        std::cout << "input size: " << keySize << " key: " << rval_str << std::endl; // for debug
+        std::cout << "output size: "<< result.size() << "key: " << result << std::endl; // for debug
+    }
+
+    return result;
+
+}
+
 /* Test code for using the class PPRF */
 int main(int argc, char* argv[]){
-    const uint64_t defaultSeed = 0x93064E905C127FE5;
+//    const uint64_t defaultSeed = 0x93064E905C127FE5;
+    const uint64_t defaultSeed = 0xF3D6FE905C127FE5;
     const uint64_t defaultHash = 0xA4BDE5C4A05E6256;
     const uint64_t defaultlcg = 0;
     int keySize = 0;
@@ -203,7 +225,7 @@ int main(int argc, char* argv[]){
     uint64_t seed = defaultSeed; /* secret */
     uint64_t lcg = defaultlcg;
     uint64_t hash = defaultHash; /* key */
-    uint64_t v = 0;
+    string v = "";
     string result;
 
     PPRF pr = PPRF();
@@ -233,7 +255,7 @@ int main(int argc, char* argv[]){
         hash = pr.hexToDecimal(argv[4]);
     }
 
-    
+
 
     cout << "secret: " << seed << endl;
 

@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include "cmdline.h"
+#include "pprf.h"
+
+using namespace std;
 
 /* Test code for using the class PPRF */
 int main(int argc, char* argv[]){
@@ -20,7 +24,7 @@ int main(int argc, char* argv[]){
     uint64_t v = 0;
     string result;
 
-    PPRF pr = PPRF();
+    PPRF pr;
     
     //std::string in_seed;
     //std::string in_hash;
