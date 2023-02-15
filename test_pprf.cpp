@@ -21,10 +21,10 @@ int main(int argc, char* argv[]){
     uint64_t seed = defaultSeed; /* secret */
     uint64_t lcg = defaultlcg;
     uint64_t hash = defaultHash; /* key */
-    uint64_t v = 0;
+    string v = "";
     string result;
 
-    PPRF pr;
+    PPRF pr = PPRF();
     
     //std::string in_seed;
     //std::string in_hash;
