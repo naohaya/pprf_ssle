@@ -24,7 +24,8 @@ public:
     uint64_t hexToDecimal(string); // converting from hex string to decimal value (uint64_t)
     vector<char> hexToBinary(string); // converting from hex string to Binary array (vector<char>)
     string prf(uint64_t *, uint64_t *, uint64_t *); // pseudo-random function
-    string puncturing(string); // puncturing the value by convolutional coding
+    string puncturing(string); // puncturing the bit string by convolutional coding
+    string depuncturing(string); // depuncturing the bit string by viterbi decorder
     string decimalToBinary(uint64_t); // converting from decimal value (uint64_t) to binary string
     string binaryToHex(string); // converting from binary string to hex string
     vector<string> splitBinaryVector(string&, int); 
@@ -32,7 +33,7 @@ public:
     string align(string);
 private:
     int keySize = 0;
-    bool debug = true;
+    bool debug = false;
 };
 
 
@@ -50,7 +51,7 @@ string PPRF::prf(uint64_t *seed, uint64_t *lcg, uint64_t *hash){
 
 }
 
-/* puncturing a random value */
+/* puncturing a random value bit string using convolutional erasure code + bit flips */
 string PPRF::puncturing(string rvalue) {
     vector<string> splvec;
     vector<int> polynomials;
@@ -91,7 +92,39 @@ string PPRF::puncturing(string rvalue) {
 
 }
 
-/* bit flips */
+/* depuncturing a bit string by viterbi decoder */
+string PPRF::depuncturing(string bits) {
+    vector<string> splvec;
+    vector<int> polynomials;
+    int constraint = 3;
+    ostringstream oss;
+    string rval_str = bits;
+    string dec;
+    string punc;
+    string result;
+
+    polynomials.push_back(6);
+    polynomials.push_back(5);
+    ViterbiCodec codec(constraint, polynomials);
+
+    keySize = rval_str.size();
+
+    splvec = splitBinaryVector(rval_str, 18);
+
+    for (auto itr = splvec.begin(); itr != splvec.end(); ++itr) {
+        dec = codec.Decode(*itr);
+        result += dec;
+        if(debug){
+            cout << "vec: " << *itr << endl; // for debug
+            cout << " dec: " << dec;  // for debug
+        }
+    } 
+
+    return result;
+
+}
+
+/* random bit flips */
 string PPRF::bitFlip(const string& inbits){
     string bits = inbits;
     srand( time(NULL) );
@@ -227,6 +260,7 @@ int main(int argc, char* argv[]){
     uint64_t hash = defaultHash; /* key */
     string v = "";
     string result;
+    string depunct;
 
     PPRF pr = PPRF();
     
@@ -267,6 +301,9 @@ int main(int argc, char* argv[]){
 
     cout << "punctured key: " << result << endl;
 
+    depunct = pr.depuncturing(result);
+
+    cout << "depunctured key: " << depunct << endl;
 
 }
 
