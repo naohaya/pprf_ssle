@@ -21,8 +21,9 @@ int main(int argc, char* argv[]){
     uint64_t seed = defaultSeed; /* secret */
     uint64_t lcg = defaultlcg;
     uint64_t hash = defaultHash; /* key */
-    string v = "";
+    string v; 
     string result;
+    string depunct;
 
     PPRF pr = PPRF();
     
@@ -62,6 +63,11 @@ int main(int argc, char* argv[]){
     result = pr.puncturing(v);
 
     cout << "punctured key: " << result << endl;
+
+    depunct = pr.depuncturing(result);
+
+    cout << "depunctured key: " << depunct << endl;
+
 
 
 }

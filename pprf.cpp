@@ -248,6 +248,7 @@ string PPRF::align(const string bits){
 }
 
 /* Test code for using the class PPRF */
+/*
 int main(int argc, char* argv[]){
 //    const uint64_t defaultSeed = 0x93064E905C127FE5;
     const uint64_t defaultSeed = 0xF3D6FE905C127FE5;
@@ -255,9 +256,9 @@ int main(int argc, char* argv[]){
     const uint64_t defaultlcg = 0;
     int keySize = 0;
 
-    uint64_t seed = defaultSeed; /* secret */
+    uint64_t seed = defaultSeed; // secret 
     uint64_t lcg = defaultlcg;
-    uint64_t hash = defaultHash; /* key */
+    uint64_t hash = defaultHash; // key 
     string v = "";
     string result;
     string depunct;
@@ -267,7 +268,7 @@ int main(int argc, char* argv[]){
     //std::string in_seed;
     //std::string in_hash;
 
-    /* for analyzing command line arguments */
+    // for analyzing command line arguments 
     cmdline::parser cla;
     cla.add<string>("secret", 's', "secret value", false);
     cla.add<string>("key", 'k', "key value", false);
@@ -284,7 +285,7 @@ int main(int argc, char* argv[]){
     }
 
     if(cla.exist("key")) {
-        /* hash = hexToDecimal(p.get<std::string>("key")); */
+        // hash = hexToDecimal(p.get<std::string>("key")); 
         //in_hash = argv[4];
         hash = pr.hexToDecimal(argv[4]);
     }
@@ -306,4 +307,5 @@ int main(int argc, char* argv[]){
     cout << "depunctured key: " << depunct << endl;
 
 }
+*/
 
