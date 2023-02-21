@@ -8,7 +8,7 @@ BINS = test pprf.a ./libs/libviterbi.a ./viterbi/viterbi.o
 all: viterbi.o libviterbi.a pprf.a commitment.a test
 
 viterbi.o: ./viterbi/viterbi.cpp
-	pushd ./viterbi; make; popd
+	cd ./viterbi; make; cd ..
 
 libviterbi.a: ./viterbi/viterbi.o
 	$(AR) $(CODEC) ./viterbi/viterbi.o
