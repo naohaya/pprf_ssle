@@ -1,2 +1,2 @@
 # pprf_ssle
-An Implementation of PPRF-based Leader Election
+An implementation of PPRF based on erasure code for SSLE.
