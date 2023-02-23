@@ -72,6 +72,7 @@ std::string Commitment::b2s(uint32_t bs) {
 /**
  * for test 
 */
+/*
 int main(int argc, char *argv[]) {
   uint32_t rand = 0b01000111111011101111; 
   Commitment com = Commitment();
@@ -81,3 +82,4 @@ int main(int argc, char *argv[]) {
 
 
 }
+*/
