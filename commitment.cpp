@@ -13,10 +13,11 @@ using namespace std;
 
 class Commitment{
 public:
+    string commit(string, int);
     string commit(uint32_t, int);
     bool verify(string, string);
     string b2s(uint32_t);
-
+    unsigned int stou(std::string const &str, size_t *idx, int base);
 
 };
 
@@ -25,6 +26,16 @@ public:
 * rand is a random value to commit 
 * b is a bit to be committed. 
 */
+
+string Commitment::commit(string rand, int b) {
+  size_t *idx = 0;
+  int base = 2;
+  uint32_t rand_val = stou(rand, idx, base);
+
+  return commit(rand_val, b);
+
+}
+
 string Commitment::commit(uint32_t rand, int b){
   const double prob = 0.6;
   uint32_t key;
@@ -68,6 +79,13 @@ std::string Commitment::b2s(uint32_t bs) {
   return ss.str();
 }
 
+unsigned int Commitment::stou(std::string const &str, size_t *idx = 0, int base = 2) {
+  const unsigned long val = std::stoul(str, idx, base);
+  if (std::numeric_limits<unsigned>::max() < val) {
+    throw std::out_of_range("stou");
+  }
+  return static_cast<unsigned>(val);
+}
 
 /**
  * for test 
